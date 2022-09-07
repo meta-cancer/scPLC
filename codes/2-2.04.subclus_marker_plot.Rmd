@@ -1,0 +1,195 @@
+---
+title: "Known Marker Plot in Clusters"
+author: "caoqi"
+date: 
+output: html_document
+---
+
+
+```{r include=FALSE}
+# import library 
+library(Seurat)
+library(SingleCellExperiment)
+
+knitr::opts_chunk$set(fig.width=20, fig.height=12) 
+
+# color
+library(RColorBrewer)
+colors <- subset(brewer.pal.info,category=='qual')
+colorqual <- c()
+for(i in nrow(colors):1) colorqual <- c(colorqual, brewer.pal(colors[i,'maxcolors'], name = rownames(colors)[i]) )
+colorqual <- c(colorqual,colorqual,colorqual)
+
+
+uniqcol <- c('Blues','Greens','Greys','Oranges','Purples','Reds')
+colors <- brewer.pal.info[uniqcol,]
+colorseq <- c()
+for(i in 1:nrow(colors)) colorseq <- c(colorseq, brewer.pal(colors[i,'maxcolors'], name = rownames(colors)[i]) )
+colorseq <- colorseq[-2]
+colorseq <- c(colorseq,colorseq,colorseq)
+
+```
+
+
+
+```{r include=FALSE}
+# test data
+# input_file <- 'Seurat_tmp.counts.scanpy.hvg2000_PC15_res1.h5ad.rds' # scanpy.sce.rds
+# input_file <- '../Seurat_tmp.counts.seurat.hvg2000_PC15_res1.rds' # seurat.rds
+# input_file <- 'Seurat_A113.counts.scanpy.hvg2000_PC15_res1.0.h5ad.rds'
+# input_file <- 'Seurat_A113.counts.scanpy.hvg2000_PC20_res1.0.h5ad.rds'
+
+# input file ------------
+args = commandArgs(T)
+input_format <- args[1]
+input_file <- args[2]
+
+
+if(input_format == 'seurat'){
+  ## a. seurat 
+seu_data <- readRDS( input_file )
+seu_data
+# seu_data$clusters <- seu_data$seurat_clusters
+seu_data@reductions$UMAP <- Reductions(seu_data, 'umap')
+
+}
+
+
+if(input_format == 'sce'){
+  ## b. scanpy.sce 
+sce_data <- readRDS( input_file )
+sce_data
+assayNames(sce_data) <- 'counts'
+
+# sce to seurat 
+seu_data <- as.Seurat(sce_data, data = NULL)
+seu_data$clusters <- seu_data$louvain
+
+}
+
+
+
+Idents(seu_data) <- seu_data$clusters
+seu_data_gene <- rownames(seu_data)
+seu_data@meta.data[,'Type'] <- gsub('A..._([A-Z_]*)[0-9]?$','\\1',seu_data$Sample)
+
+
+## outfile -------
+# output_file <- paste0(input_file,'.cluster_marker.html')
+
+```
+
+
+seurat data 
+```{r}
+input_file
+seu_data
+```
+
+umap plot colored by clusters and samples
+```{r fig.height = 8, fig.width = 16}
+p1 <- DimPlot(seu_data, group.by = 'clusters', label = T, cols = colorqual) + NoLegend()
+p2 <- DimPlot(seu_data, group.by = 'Sample', cols = colorqual, pt.size = 0.1) + NoLegend()
+p1+p2
+```
+
+
+```{r fig.height = 6, fig.width = 16}
+DimPlot(seu_data, group.by = 'Sample', cols = colorqual, pt.size = 0.1)
+```
+
+
+
+```{r fig.height = 6, fig.width = 7}
+DimPlot(seu_data, group.by = 'Type', cols = colorqual)
+```
+
+
+
+UMAP plot showing the marker genes we used to distinguish major cell types:   
+T: CD3D, CD3G;   
+NK: NKG7;   
+B: CD79A;   
+dendritic cells: LILRA4, CLEC9A, CD1C, LAMP3;   
+macrophages and monocytes: CD68, CD163;   
+mast cells: KIT, CPA3;   
+neutrophils: CSF3R, S100A8, S100A9;   
+ILC: IL7R, RORA;   
+fibroblast: COL1A1;   
+Endothelial cells: VWF, CLEC4G;   
+Parenchymal cells
+
+
+# lymphocyte
+### T and NK cell
+```{r fig.height=12, fig.width=20}
+features <- c('PTPRC','CD3D','CD3E','CD3G','CD8A','NKG7')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+
+# MAIT
+features <- c('CD4','SLC4A10','RORA','RORC','CXCR4')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
+
+
+
+### B cell 
+```{r fig.height=12, fig.width=20}
+# B cell: MS4A1, CD37
+# plasma: CD79A, CD38, MZB1, SSR4
+features <- c('MS4A1','CD37','CD79A','CD38','MZB1')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
+
+
+
+# Myeloid cell 
+### neutrophil, Mast
+```{r fig.height=12, fig.width=20}
+features <- c('CSF3R','S100A8','S100A9','TPSAB1','CPA3','KIT')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+
+features <- c('CSF1R','CSF2R','CSF3R','CXCL8','CXCL2','KIT')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+
+```
+
+
+### macrophage
+```{r fig.height=12, fig.width=20}
+features <- c('CD68','CD14','FCGR3A','MARCO','C1QC','SPP1')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
+
+
+### monocyte 
+```{r fig.height=12, fig.width=20}
+features <- c('FCN1','CD163','LILRA4', 'CLEC9A', 'CD1C', 'LAMP3')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
+
+
+# stromal cell 
+### endothelial and Fibroblast cell
+Usually, this cluster is very right.
+```{r fig.height=12, fig.width=20}
+features <- c('MGP', 'VWF', 'PLVAP','CLEC4G','COL1A1','ACTA2'  )
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
+
+
+
+
+# parenchymal 
+### hepatocyte
+```{r fig.height=12, fig.width=20}
+features <- c("GPC3","TTR","AFP","ALB",'APOE','APOA1')
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
+
+
+### cholangio cell
+```{r fig.height=12, fig.width=20}
+features <- c("EPCAM","KRT7","PROM1","SOX9","KRT19")
+FeaturePlot(seu_data, features = features, reduction = 'UMAP', ncol = 3, label = T)
+```
