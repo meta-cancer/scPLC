@@ -9,5 +9,5 @@ http://meta-cancer.cn:3838/scPLC/
 ## Citation
 Xue et al. Tumor microenvironment subtypes and neutrophil heterogeneity in liver cancer. Nature (2022).
 ## Contact us
-rxue@blmu.edu.cn
+rxue@bjmu.edu.cn
 
