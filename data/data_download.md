@@ -13,7 +13,7 @@ cat seu_A124.counts_anno.rds.a* > seu_A124.counts_anno.rds
 
 # Method 2, ftp download (recommendation for users in China)
 
-IP: 123.124.148.211
-Name: ftpguest1
-Password: 123456
-Recommended software: Filezilla
+IP: 123.124.148.211  
+Name: ftpguest1  
+Password: 123456  
+Recommended software: Filezilla  
