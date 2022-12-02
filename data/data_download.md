@@ -5,7 +5,7 @@ Sharing link: https://drive.google.com/drive/folders/1mgqjO5ABV5mQxYRUbZEp4XVwCJ
 seu_A124.counts_anno.rds is the single cell RNA-seq data from 124 patients with liver cancer. 
 seu_mouse_liverCancer.anno.rds is mouse liver cancer data. 
 
-To avoid network interruption, we have splited the seurat objects into several 1 Gb large files. You can download them and combine them to generate the complete Rdata object. 
+To avoid network interruption, we have splited the seurat objects into several 1 Gb large files. You can download them and combine them to generate the complete Rdata object.   
 e.g.
 ```
 cat seu_A124.counts_anno.rds.a* > seu_A124.counts_anno.rds
